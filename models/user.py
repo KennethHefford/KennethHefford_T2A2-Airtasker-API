@@ -2,9 +2,9 @@ from init import db, ma
 
 class User(db.Model):
     #name of table
-    __tablename__ = "customers"
+    __tablename__ = "users"
     #attributes of table
-    user_name = db.Column(db.String, primarykey=True, nullable=False, unique=True)
+    user_name = db.Column(db.String, primary_key=True, nullable=False, unique=True)
     name = db.Column(db.String, nullable=False)
     user_email = db.Column(db.String, nullable=False, unique=True)
     user_location = db.Column(db.String, nullable=False)
