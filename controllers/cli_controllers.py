@@ -38,6 +38,7 @@ def seed_tables():
         availability = "Monday-Friday 8am-5pm",
         description = "I am available to do all jobs relating to plumming",
         date = date.today(),
+        job_location = "Sydney",
 
         user = users [0]
     ), Jobpost(
@@ -45,6 +46,7 @@ def seed_tables():
         availability = "Weekends 8am-5pm",
         description = "Moving house? Let me help. I have a large truck and an assistant to help",
         date = date.today(),
+        job_location = "Melbourne",
 
         user = users [1]
     )]
