@@ -6,9 +6,10 @@ class Jobpost(db.Model):
 
 
     availability = db.Column(db.String, nullable=False)
-    job_id = db.Column(db.Integer, primary_key=True)
-    job_type = db.Column(db.String, primary_key=True)
+    job_id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    job_type = db.Column(db.String, primary_key=True, nullable = False)
     date = db.Column(db.Date)
+    description = db.Column(db.String, nullable=False )
 
     user_name = db.Column(db.String, db.ForeignKey("users.user_name"), nullable=False)
     # name = db.Column(db.String, db.ForeignKey("users.name"), nullable=False)
@@ -22,7 +23,7 @@ class JobpostSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["user_name", "name", "location"])
 
     class Meta:
-        fields = ("user", "availability", "job_id", "job_type", "date")
+        fields = ("user", "availability", "job_id", "job_type", "date", "description")
 
 #  fields = ("user_name", "name", "location", "availability", "job_id", "job_type", "date")
 

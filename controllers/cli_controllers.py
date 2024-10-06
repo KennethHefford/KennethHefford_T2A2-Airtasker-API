@@ -1,6 +1,8 @@
+from datetime import date
 from flask import Blueprint
 from init import db, bcrypt
 from models.user import User
+from models.jobpost import Jobpost
 
 db_commands = Blueprint("db", __name__)
 
@@ -29,6 +31,26 @@ def seed_tables():
         location = "APAC"
     )]
     db.session.add_all(users)
+    
+    jobposts = [
+        Jobpost(
+        job_type = "sample_plumming",
+        availability = "Monday-Friday 8am-5pm",
+        description = "I am available to do all jobs relating to plumming",
+        date = date.today(),
+
+        user = users [0]
+    ), Jobpost(
+        job_type = "sample_movers",
+        availability = "Weekends 8am-5pm",
+        description = "Moving house? Let me help. I have a large truck and an assistant to help",
+        date = date.today(),
+
+        user = users [1]
+    )]
+
+
+    db.session.add_all(jobposts)
 
     db.session.commit()
 
