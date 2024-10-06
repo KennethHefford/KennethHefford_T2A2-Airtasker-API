@@ -14,25 +14,25 @@ def seed_tables():
     #create a list of user instances
     users = [
         User(
-        user_email = "admin@email.com",
+        email = "admin@email.com",
         user_name = "admin",
         name = "admin",
-        user_password = bcrypt.generate_password_hash("123456").decode("utf-8"),
-        user_location = "APAC",
+        password = bcrypt.generate_password_hash("123456").decode("utf-8"),
+        location = "APAC",
         is_admin = True
     ),
     User(
-        user_email = "usera@email.com", 
+        email = "usera@email.com", 
         name = "User A",
         user_name = "user_a",
-        user_password = bcrypt.generate_password_hash("123456").decode("utf-8"),
-        user_location = "APAC"
+        password = bcrypt.generate_password_hash("123456").decode("utf-8"),
+        location = "APAC"
     )]
     db.session.add_all(users)
 
     db.session.commit()
 
-    print("Tables created!")
+    print("Tables seeded!")
 
 
 @db_commands.cli.command("drop")
