@@ -17,13 +17,13 @@ class Jobpost(db.Model):
 
 
     user = db.relationship('User', back_populates ='jobposts')
-
+    jobrequests = db.relationship('Jobrequest', back_populates='jobposts')
 
 class JobpostSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
-
+    jobrequests = fields.List(fields.Nested('JobrequestSchema', exclude =['jobrequest']))
     class Meta:
-        fields = ("user", "availability", "job_id", "job_type", "date", "description", "job_location")
+        fields = ("user", "availability", "job_id", "job_type", "date", "description", "job_location", "jobrequests")
 
 #  fields = ("user_name", "name", "location", "availability", "job_id", "job_type", "date")
 
