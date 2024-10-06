@@ -12,8 +12,8 @@ class User(db.Model):
     password = db.Column(db.String, nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
-    jobposts = db.relationship('Jobpost', back_populates ='user')
-    jobrequests = db.relationship('Jobrequest', back_populates='user')
+    jobposts = db.relationship("Jobpost", back_populates ="user")
+    jobrequests = db.relationship("Jobrequest", back_populates="user")
 
 class UserSchema(ma.Schema):
     jobposts = fields.List(fields.Nested('JobpostSchema', exclude=["user"]))

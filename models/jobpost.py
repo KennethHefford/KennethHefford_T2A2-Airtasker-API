@@ -6,7 +6,7 @@ class Jobpost(db.Model):
 
 
     availability = db.Column(db.String, nullable=False)
-    job_id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    job_id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True, unique=True)
     job_type = db.Column(db.String, primary_key=True, nullable = False)
     date = db.Column(db.Date)
     description = db.Column(db.String, nullable=False )
@@ -17,13 +17,14 @@ class Jobpost(db.Model):
 
 
     user = db.relationship('User', back_populates ='jobposts')
-    jobrequests = db.relationship('Jobrequest', back_populates='jobposts')
+    jobrequests = db.relationship("Jobrequest", back_populates="jobpost")
 
 class JobpostSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
     jobrequests = fields.List(fields.Nested('JobrequestSchema', exclude =['jobrequest']))
     class Meta:
-        fields = ("user", "availability", "job_id", "job_type", "date", "description", "job_location", "jobrequests")
+        fields = ("user", "job_id", "job_type", "job_location", "availability", "description", "date", "jobrequests")
+        ordered = True
 
 #  fields = ("user_name", "name", "location", "availability", "job_id", "job_type", "date")
 
