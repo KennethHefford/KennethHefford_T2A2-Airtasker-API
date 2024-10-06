@@ -22,9 +22,9 @@ def seed_tables():
         is_admin = True
     ),
     User(
-        email = "usera@email.com", 
-        name = "User A",
-        user_name = "user_a",
+        email = "test@email.com", 
+        name = "Test",
+        user_name = "test",
         password = bcrypt.generate_password_hash("123456").decode("utf-8"),
         location = "APAC"
     )]
