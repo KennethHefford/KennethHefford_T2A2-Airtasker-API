@@ -1,11 +1,10 @@
 from datetime import date
-
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
 from init import db
 from models.review import Review, review_schema, reviews_schema
 from models.jobrequest import Jobrequest
+
 review_bp = Blueprint("reviews", __name__, url_prefix="/jobrequests/<int:request_id>/reviews/")
 
 # Only create review if job request is completed
@@ -72,4 +71,4 @@ def edit_review(request_id, review_id):
     else:
         return {"error": f"Review with ID {review_id} does not exist."}, 404
     
-    #reviews are permanent and cannot be deleted
+# Reviews are permanent and cannot be deleted

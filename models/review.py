@@ -1,7 +1,7 @@
 from init import db, ma
 from marshmallow import fields
 from sqlalchemy import CheckConstraint
-from models.jobrequest import JobrequestSchema  # Ensure JobrequestSchema is imported
+from models.jobrequest import JobrequestSchema  # Ensure correct import
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -26,10 +26,10 @@ class Review(db.Model):
 
 class ReviewSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
-    jobrequest = fields.Nested('JobrequestSchema', only=["request_id"], exclude=["reviews"])
+    jobrequest = fields.Nested(JobrequestSchema, only=["request_id", "title"], dump_only=True)  # Correct reference
 
     class Meta:
-        fields = ("review_id", "request_id", "title", "date", "description", "rating", "user")
+        fields = ("review_id", "request_id", "title", "date", "description", "rating", "user", "jobrequest")  # Include jobrequest
         ordered = True
 
 review_schema = ReviewSchema()
