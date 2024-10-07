@@ -14,12 +14,14 @@ class User(db.Model):
 
     jobposts = db.relationship("Jobpost", back_populates ="user")
     jobrequests = db.relationship("Jobrequest", back_populates="user")
+    reviews = db.relationship('Review', back_populates='user')
 
 class UserSchema(ma.Schema):
     jobposts = fields.List(fields.Nested('JobpostSchema', exclude=["user"]))
     jobrequests = fields.List(fields.Nested('JobrequestSchema', exclude=["user"]))
+    reviews = fields.List(fields.Nested('ReviewSchema', exclude=["user"]))
     class Meta:
-        fields = ("user_name","name", "email", "location", "password", "is_admin", "jobpost", "jobrequests")
+        fields = ("user_name","name", "email", "location", "password", "is_admin", "jobposts", "jobrequests", "reviews")
 
 #to handle a single user object
 user_schema = UserSchema(exclude=["password"])
