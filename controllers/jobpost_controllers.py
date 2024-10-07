@@ -5,9 +5,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from init import db
 from models.jobpost import Jobpost, jobpost_schema, jobposts_schema
-from models.user import User
+from controllers.jobrequest_controllers import jobrequests_bp
+# from models.user import User
 
 jobposts_bp = Blueprint("jobposts", __name__, url_prefix="/jobposts")
+jobposts_bp.register_blueprint(jobrequests_bp)
 
 
 
