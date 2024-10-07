@@ -34,7 +34,7 @@ def register_user():
             #not null violation
         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
             #unique violation
-            return {"error": "Email adress is already in use."}, 400
+            return {"error": "Email address is already in use."}, 400
 
 
 @auth_bp.route("/login", methods=["POST"])
