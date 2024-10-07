@@ -11,16 +11,15 @@ class Jobrequest(db.Model):
     date = db.Column(db.Date)
     description = db.Column(db.String, nullable=False )
     title = db.Column(db.String, nullable=False )
-    completed = db.Column(db.Boolean, nullable=False)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
     
 
     user_name = db.Column(db.String, db.ForeignKey("users.user_name"), nullable=False)
-    # name = db.Column(db.String, db.ForeignKey("users.name"), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey("jobposts.job_id"), nullable = False)
-    # job_type = db.Column(db.String, db.ForeignKey("jobposts.job_type"), nullable = False)
+
 
     user = db.relationship("User", back_populates="jobrequests")
-    jobpost = db.relationship("Jobpost", back_populates = "jobrequests")
+    jobpost = db.relationship("Jobpost", back_populates = "jobrequests", foreign_keys=[job_id])
 
 class JobrequestSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
