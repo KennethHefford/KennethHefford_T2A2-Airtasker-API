@@ -6,7 +6,7 @@ class Jobrequest(db.Model):
     __tablename__ = "jobrequests"
 
 
-    request_id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    request_id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True, unique=True)
     job_time = db.Column(db.String, nullable=False)
     date = db.Column(db.Date)
     description = db.Column(db.String, nullable=False )

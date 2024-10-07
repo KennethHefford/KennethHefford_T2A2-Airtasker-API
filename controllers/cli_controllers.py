@@ -55,6 +55,25 @@ def seed_tables():
 
     db.session.add_all(jobposts)
 
+    jobrequests = [
+        Jobrequest(
+            job_time = "Friday 9am",
+            description = "I need help with my tap, it won't stop leaking",
+            title = "Leaky tap",
+            completed = False,
+            date = date.today(),
+            user = users[0],
+            jobpost = jobposts[0],
+        ), Jobrequest(
+            job_time = "Saturday 9am",
+            description = "I am moving house",
+            title = "Moving House",
+            completed = True,
+            date = date.today(),
+            user = users[1],
+            jobpost = jobposts[1])
+    ]
+    db.session.add_all(jobrequests)
     db.session.commit()
 
     print("Tables seeded!")
