@@ -24,7 +24,7 @@ class JobrequestSchema(ma.Schema):
     reviews = fields.Nested('ReviewSchema', many=True, exclude=["jobrequest"])
 
     class Meta:
-        fields = ("request_id", "job_time", "date", "description", "title", "completed", "user", "jobpost", "reviews")
+        fields = ("title","request_id", "job_time", "date", "description", "completed", "user", "jobpost", "reviews")
         ordered = True
 
 jobrequest_schema = JobrequestSchema()

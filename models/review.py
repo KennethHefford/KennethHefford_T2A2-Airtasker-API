@@ -26,7 +26,7 @@ class Review(db.Model):
 
 class ReviewSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
-    jobrequest = fields.Nested(JobrequestSchema, only=["request_id", "title"], dump_only=True)  # Correct reference
+    jobrequest = fields.Nested(JobrequestSchema, only=["title"], dump_only=True)  # Correct reference
 
     class Meta:
         fields = ("review_id", "request_id", "title", "date", "description", "rating", "user", "jobrequest")  # Include jobrequest
