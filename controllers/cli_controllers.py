@@ -4,6 +4,7 @@ from init import db, bcrypt
 from models.user import User
 from models.jobpost import Jobpost
 from models.jobrequest import Jobrequest
+from models.review import Review
 
 db_commands = Blueprint("db", __name__)
 
@@ -74,6 +75,19 @@ def seed_tables():
             jobpost = jobposts[1])
     ]
     db.session.add_all(jobrequests)
+
+    reviews = [
+        Review (
+            user = users[1],
+            jobrequest = jobrequests[1],
+            title = "Best Service",
+            description = "The movers were very efficient and none of my furniture were damaged",
+            rating = 5,
+            date = date.today(),
+
+        )
+    ]
+    db.session.add_all(reviews) 
     db.session.commit()
 
     print("Tables seeded!")
