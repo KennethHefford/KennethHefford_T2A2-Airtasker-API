@@ -6,18 +6,13 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from init import db
 from models.jobpost import Jobpost, jobpost_schema, jobposts_schema
 from controllers.jobrequest_controllers import jobrequests_bp
-# from models.user import User
+
+from utils import authorise_as_admin
 
 jobposts_bp = Blueprint("jobposts", __name__, url_prefix="/jobposts")
 jobposts_bp.register_blueprint(jobrequests_bp)
 
 
-
-#/jobposts - GET - fetch all jobposts
-#/jobposts/<id> GET fetch a specific jobpost
-#/jobposts - POST - create a new jobpost
-#/jobposts/<id> - DELETE - delete a jobpost
-#/jobposts/<id> -PUT,PATCH -edit a jobpost
 
 #/jobposts - GET - fetch all jobposts
 @jobposts_bp.route("/")
@@ -62,14 +57,30 @@ def create_jobpost():
 @jobposts_bp.route("/<int:job_id>", methods=["DELETE"])
 @jwt_required()
 def delete_jobpost(job_id):
+    # Get the current user's user_name from the JWT
+    current_user_name = get_jwt_identity()
+    
+    # Check if user is admin
+    is_admin = authorise_as_admin()
+    
+    # Fetch the job post from the database
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
-
+    
+    # If job post exists
     if jobpost:
-       db.session.delete(jobpost)
-       db.session.commit()
-       return {"message": f"Job {jobpost.job_type} deleted successfully!"}
+        # If not admin or job post owner
+        if not (is_admin or jobpost.user_name == current_user_name):
+            # Return error message
+            return {"error": "You are not authorised to delete job posts."}, 403
+        
+        # Delete the job post
+        db.session.delete(jobpost)
+        db.session.commit()
+        # Return success message
+        return {"message": f"Job {jobpost.job_type} deleted successfully!"}, 200
     else:
+        # Return error message if job post not found
         return {"error": f"Job Post with job ID:{job_id} not found"}, 404
     
 
@@ -82,6 +93,12 @@ def update_jobpost(job_id):
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
     if jobpost:
+        #if the user is not the owner of the jobpost
+        if jobpost.user_name != get_jwt_identity():
+            #return error message
+            return {"error": "You are not authorised to edit this job post. Only owner can edit posts."}, 403
+
+        #update the fields as required
         jobpost.job_type = body_data.get("job_type") or jobpost.job_type
         jobpost.availability = body_data.get("availability") or jobpost.availability
         jobpost.description = body_data.get("description") or jobpost.description
@@ -90,3 +107,4 @@ def update_jobpost(job_id):
         return jobpost_schema.dump(jobpost)
     else:
         return {"error": f"Job Post with ID {job_id}not found."}, 404
+    

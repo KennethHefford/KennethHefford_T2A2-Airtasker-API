@@ -4,8 +4,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from init import db
 from models.review import Review, review_schema, reviews_schema
 from models.jobrequest import Jobrequest
+from utils import authorise_as_admin
 
-review_bp = Blueprint("reviews", __name__, url_prefix="/jobrequests/<int:request_id>/reviews/")
+review_bp = Blueprint("reviews", __name__, url_prefix="/jobrequests/<int:request_id>/reviews")
 
 # Only create review if job request is completed
 @review_bp.route("/", methods=["POST"])
@@ -47,13 +48,19 @@ def create_review(request_id):
 @review_bp.route("/<int:review_id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def edit_review(request_id, review_id):
+    # Load the data from the request body
     body_data = review_schema.load(request.get_json(), partial=True)
 
     # Fetch the review by its ID
     stmt = db.select(Review).filter_by(review_id=review_id)
     review = db.session.scalar(stmt)
 
+    # If review exists
     if review:
+        # Check if the current user is the owner of the review
+        if review.user_name != get_jwt_identity():
+            return {"error": "You are not authorised to edit this review. Only the owner can edit it."}, 403
+
         # Check if the review belongs to the job request
         if review.request_id != request_id:
             return {"error": "Review does not belong to this job request."}, 403
@@ -65,8 +72,33 @@ def edit_review(request_id, review_id):
 
         # Commit the changes to the database
         db.session.commit()
-        return review_schema.dump(review)
+        return review_schema.dump(review), 200
     else:
+        # Return error message if review not found
         return {"error": f"Review with ID {review_id} does not exist."}, 404
     
-# Reviews are permanent and cannot be deleted
+
+#only admin can delete a review for inappropriate content
+@review_bp.route("/<int:review_id>", methods=["DELETE"])
+@jwt_required()
+def delete_review(review_id):
+    # Check if user is admin
+    is_admin = authorise_as_admin()
+    
+    # If the user is not an admin, return an error message
+    if not is_admin:
+        return {"error": "You are not authorised to delete this review. Only admins can delete reviews."}, 403
+    
+    # Fetch the review by its ID
+    stmt = db.select(Review).filter_by(review_id=review_id)
+    review = db.session.scalar(stmt)
+    
+    # If review exists
+    if review:
+        # Delete the review
+        db.session.delete(review)
+        db.session.commit()
+        return {"message": f"Review with ID {review_id} has been deleted successfully."}, 200
+    else:
+        # Return error message if review not found
+        return {"error": f"Review with ID {review_id} does not exist."}, 404
