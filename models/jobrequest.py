@@ -1,5 +1,6 @@
 from init import db, ma
 from marshmallow import fields
+from marshmallow.validate import Length, And, Regexp
 
 class Jobrequest(db.Model):
     __tablename__ = "jobrequests"
@@ -22,6 +23,20 @@ class JobrequestSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
     jobpost = fields.Nested('JobpostSchema', only=["job_id", "job_type", "job_location"], exclude=["jobrequests"])
     reviews = fields.Nested('ReviewSchema', many=True, exclude=["jobrequest"])
+
+    title = fields.String(required=True, validate=[
+        And(
+            Length(min=3, max=30, error="Title must be between 3 and 30 characters."),
+            Regexp(r'^[A-Z][a-zA-Z0-9 ]*$', error="Title must start with a capital letter and contain only alphanumeric characters and spaces.")
+        )
+    ])
+    description = fields.String(required=True, validate=[Length(min=1, max=500, error="Description must be between 1 and 500 characters.")])
+    job_time = fields.String(required=True, validate=[
+    And(
+        Length(min=1, max=50, error="Job Time must be between 1 and 50 characters."),
+        Regexp(r'^[a-zA-Z0-9 ,\-]*$', error="Job Time must contain only alphanumeric characters, spaces, commas, and hyphens.")
+    )])
+    completed = fields.Boolean(required=True)
 
     class Meta:
         fields = ("title","request_id", "job_time", "date", "description", "completed", "user", "jobpost", "reviews")

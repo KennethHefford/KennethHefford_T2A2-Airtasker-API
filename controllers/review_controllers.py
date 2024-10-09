@@ -11,7 +11,7 @@ review_bp = Blueprint("reviews", __name__, url_prefix="/jobrequests/<int:request
 @review_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_review(request_id):
-    body_data = request.get_json()
+    body_data = review_schema.load(request.get_json())
 
     # Fetch the job request by its ID
     jobrequest = db.session.scalar(db.select(Jobrequest).filter_by(request_id=request_id))
@@ -22,9 +22,7 @@ def create_review(request_id):
             rating = body_data.get("rating")
             if rating is None:
                 return {"error": "Rating is required."}, 400
-            
-            if not (1 <= rating <= 5):
-                return {"error": "Rating must be between 1 and 5."}, 400
+
             review = Review(
                 date=date.today(),
                 title=body_data.get("title"),
@@ -49,7 +47,7 @@ def create_review(request_id):
 @review_bp.route("/<int:review_id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def edit_review(request_id, review_id):
-    body_data = request.get_json()
+    body_data = review_schema.load(request.get_json(), partial=True)
 
     # Fetch the review by its ID
     stmt = db.select(Review).filter_by(review_id=review_id)

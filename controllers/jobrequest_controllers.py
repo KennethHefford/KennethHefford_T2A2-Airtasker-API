@@ -14,7 +14,7 @@ jobrequests_bp = Blueprint("jobrequests", __name__, url_prefix="/<int:job_id>/jo
 @jwt_required()
 def create_jobrequest(job_id):
     #get the jobrequest info from the body
-    body_data = request.get_json()
+    body_data = jobrequest_schema.load(request.get_json())
     #fetch the jobpost with id=job_id
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
@@ -59,7 +59,7 @@ def delete_jobrequest(job_id, request_id):
 @jobrequests_bp.route("/<int:request_id>", methods=["PUT","PATCH"])
 @jwt_required()
 def edit_jobrequest(job_id, request_id):
-    body_data = request.get_json()
+    body_data = jobrequest_schema.load(request.get_json(), partial=True)
 
     stmt = db.select(Jobrequest).filter_by(request_id=request_id)
     jobrequest = db.session.scalar(stmt)
