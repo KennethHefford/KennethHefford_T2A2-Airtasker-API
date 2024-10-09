@@ -1,7 +1,7 @@
 from init import db, ma
 from marshmallow import fields
-from sqlalchemy import CheckConstraint
-from models.jobrequest import JobrequestSchema  # Ensure correct import
+from models.jobrequest import JobrequestSchema 
+from marshmallow.validate import Length, Range, And, Regexp
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -18,18 +18,22 @@ class Review(db.Model):
     user = db.relationship("User", back_populates="reviews")
     jobrequest = db.relationship("Jobrequest", back_populates="reviews")
 
-    # To make sure ratings are consistent 1-5
-    __table_args__ = (
-        CheckConstraint('rating >= 1', name='check_rating_gte_1'),
-        CheckConstraint('rating <= 5', name='check_rating_lte_5'),
-    )
 
 class ReviewSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=["name"])
-    jobrequest = fields.Nested(JobrequestSchema, only=["title"], dump_only=True)  # Correct reference
+    jobrequest = fields.Nested(JobrequestSchema, only=["title"], dump_only=True)
+
+    title = fields.String(required=True, validate=[
+        And(
+            Length(min=3, max=20, error="Title must be between 3 and 20 characters."),
+            Regexp(r'^[A-Z][a-zA-Z0-9 !]*$', error="Title must start with a capital letter and contain only alphanumeric characters, spaces, and exclamation marks.")
+        )
+    ])
+    description = fields.String(required=True, validate=[Length(min=1, max=500, error="Description must be between 1 and 500 characters.")])
+    rating = fields.Integer(required=True, validate=[Range(min=1, max=5, error="Rating must be between 1 and 5.")])
 
     class Meta:
-        fields = ("review_id", "request_id", "title", "date", "description", "rating", "user", "jobrequest")  # Include jobrequest
+        fields = ("review_id", "request_id", "title", "date", "description", "rating", "user", "jobrequest") 
         ordered = True
 
 review_schema = ReviewSchema()

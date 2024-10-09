@@ -43,7 +43,7 @@ def get_a_jobpost(job_id):
 @jobposts_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_jobpost():
-    body_data = request.get_json()
+    body_data = jobpost_schema.load(request.get_json())
     jobpost = Jobpost(
         job_type=body_data.get("job_type"),
         availability=body_data.get("availability"),
@@ -78,7 +78,7 @@ def delete_jobpost(job_id):
 @jobposts_bp.route("/<int:job_id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def update_jobpost(job_id):
-    body_data = request.get_json()
+    body_data = jobpost_schema.load(request.get_json(), partial=True)
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
     if jobpost:
