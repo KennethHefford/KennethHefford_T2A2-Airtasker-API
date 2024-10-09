@@ -73,20 +73,14 @@ def delete_jobrequest(request_id):
     else:
         # Return error message if job request not found
         return {"error": f"Job Request with ID {request_id} does not exist"}, 404
-
+#edit job request
 @jobrequests_bp.route("/<int:request_id>", methods=["PUT", "PATCH"])
 @jwt_required()
-<<<<<<< HEAD
-def edit_jobrequest(job_id, request_id):
-    body_data = jobrequest_schema.load(request.get_json(), partial=True)
-
-=======
 def edit_jobrequest(request_id):
     # Load the data from the request body
     body_data = jobrequest_schema.load(request.get_json(), partial=True)
     
     # Fetch the job request from the database
->>>>>>> feature/validation
     stmt = db.select(Jobrequest).filter_by(request_id=request_id)
     jobrequest = db.session.scalar(stmt)
     
