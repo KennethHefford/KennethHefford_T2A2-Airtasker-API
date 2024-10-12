@@ -4,8 +4,11 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import authorise_as_admin_or_user
 from init import db
-from models.jobrequest import Jobrequest, jobrequest_schema, jobrequests_schema
+
+from models.jobrequest import Jobrequest, jobrequest_schema
 from models.jobpost import Jobpost
+
+# Create a Blueprint for job requests
 jobrequests_bp = Blueprint("jobrequests", __name__, url_prefix="/<int:job_id>/jobrequests")
 
 
