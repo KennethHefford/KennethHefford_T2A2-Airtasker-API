@@ -12,7 +12,7 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String, nullable=False)
 
-    user_name = db.Column(db.String, db.ForeignKey("users.user_name", ondelete ='SET NULL'), nullable=False)
+    user_name = db.Column(db.String, db.ForeignKey("users.user_name"), nullable=False)
     request_id = db.Column(db.Integer, db.ForeignKey('jobrequests.request_id'), nullable=False)
 
     user = db.relationship("User", back_populates="reviews")

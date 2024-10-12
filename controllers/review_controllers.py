@@ -81,6 +81,7 @@ def edit_review(request_id, review_id):
 #only admin can delete a review for inappropriate content
 @review_bp.route("/<int:review_id>", methods=["DELETE"])
 @jwt_required()
+@authorise_as_admin
 def delete_review(review_id):
     # Check if user is admin
     is_admin = authorise_as_admin()

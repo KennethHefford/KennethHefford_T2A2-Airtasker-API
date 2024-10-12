@@ -2,7 +2,7 @@ from datetime import date
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils import authorise_as_admin
+from utils import authorise_as_admin_or_user
 from init import db
 from models.jobrequest import Jobrequest, jobrequest_schema, jobrequests_schema
 from models.jobpost import Jobpost
@@ -40,34 +40,25 @@ def create_jobrequest(job_id):
     
 
 
-# Delete jobrequest only available if completed is == false
+# Delete job request only available if completed is == false
 @jobrequests_bp.route("/<int:request_id>", methods=["DELETE"])
 @jwt_required()
+@authorise_as_admin_or_user
 def delete_jobrequest(job_id, request_id):
-    # Get the current user's user_name from the JWT
-    current_user_name = get_jwt_identity()
-    
-    # Check if user is admin
-    is_admin = authorise_as_admin()
-    
     # Fetch the job request from the database
     stmt = db.select(Jobrequest).filter_by(request_id=request_id)
     jobrequest = db.session.scalar(stmt)
-    
+
     # If job request exists
     if jobrequest:
         # If the job request is completed, it cannot be deleted
         if jobrequest.completed:
             return {"error": "Cannot delete a job request that has been completed."}, 403
-        
-        # If not admin or job request owner
-        if not (is_admin or jobrequest.user_name == current_user_name):
-            # Return error message
-            return {"error": "You are not authorised to delete this job request."}, 403
-        
+
         # Delete the job request
         db.session.delete(jobrequest)
         db.session.commit()
+
         # Return success message
         return {"message": f"Job Request with ID {request_id} has been withdrawn"}, 200
     else:

@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta
-from utils import authorise_as_admin
+from utils import authorise_as_admin_or_user
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("/register", methods=["POST"])
@@ -59,55 +59,27 @@ def login_user():
         #respond back with an error message
         return {"error": "Invalid email or password"}, 400
 
-
-@auth_bp.route("/users", methods=["PATCH", "PUT"])
-@jwt_required()
-def update_user():
-    # Ensure the user from the JWT matches the user being updated
-    body_data = UserSchema().load(request.get_json(), partial=True)
-    password = body_data.get("password")
-    #get the user from the db
-    stmt = db.select(User).filter_by(user_name=get_jwt_identity())
-    user = db.session.scalar(stmt)
-    #if user exists
-    if user:
-            user.user_name = body_data.get("user_name") or user.user_name
-            if password:
-                user.password = bcrypt.generate_password_hash(password).decode("utf-8")
-            user.name = body_data.get("name") or user.name
-            user.email = body_data.get("email") or user.email
-            user.location = body_data.get("location") or user.location
-            password = body_data.get("password")
-            #commit the session
-            db.session.commit()
-            #return acknowledgement
-            return user_schema.dump(user)
-    else:
-            # return error message if user not existing
-            return {"error": "User not found"}, 404
-    
-#delete user
 @auth_bp.route("/users/<string:user_name>", methods=["DELETE"])
 @jwt_required()
-@authorise_as_admin
+@authorise_as_admin_or_user
 def delete_user(user_name):
     # Get user from db
     stmt = db.select(User).filter_by(user_name=user_name)
     user = db.session.scalar(stmt)
-    
+
     # If user exists
     if user:
-        # Generate a unique user_name
+        # Generate a unique user_name for deleted users
         stmt = db.select(User).filter(User.user_name.like('[deleted user%]')).order_by(User.user_name.desc())
         last_deleted_user = db.session.scalar(stmt)
-        
+
         if last_deleted_user:
-            last_number = int(last_deleted_user.user_name.split()[-1])
+            last_name_part = last_deleted_user.user_name.split()[-1]
+            last_number = int(''.join(filter(str.isdigit, last_name_part)))
             new_deleted_user_name = f"[deleted user {last_number + 1}]"
         else:
             new_deleted_user_name = "[deleted user 1]"
-        
-        # Generate a unique placeholder email
+
         new_deleted_user_email = f"deleted{last_number + 1}@example.com" if last_deleted_user else "deleted1@example.com"
 
         # Check if the placeholder user exists, if not, create it
@@ -119,32 +91,60 @@ def delete_user(user_name):
                 name="Deleted User",
                 email=new_deleted_user_email,
                 location="Unknown",
-                password="",
+                password="",  # Set this to a secure value
                 is_admin=False
             )
             db.session.add(deleted_user)
             db.session.commit()
-            
-        # Set user_name to placeholder in jobrequest table by user for completed job requests
-        stmt = db.update(Jobrequest).where(Jobrequest.user_name == user_name, Jobrequest.completed == True).values(user_name=new_deleted_user_name)
+
+        # Update job requests to link them to the new deleted user name
+        stmt = db.update(Jobrequest).where(Jobrequest.user_name == user_name).values(user_name=new_deleted_user_name)
         db.session.execute(stmt)
 
-        # Delete job requests where completed is False
-        stmt = db.delete(Jobrequest).where(Jobrequest.user_name == user_name, Jobrequest.completed == False)
-        db.session.execute(stmt)
+        # Commit the changes to ensure the updates are applied
+        db.session.commit()
 
-        # Set user_name to placeholder for all reviews by user
-        stmt = db.update(Review).where(Review.user_name == user_name).values(user_name=new_deleted_user_name)
-        db.session.execute(stmt)
+        # Now delete job posts by user
+        stmt = db.select(Jobpost).filter_by(user_name=user_name)
+        jobposts = db.session.scalars(stmt).all()
 
-        # Delete job posts by user
-        stmt = db.delete(Jobpost).where(Jobpost.user_name == user_name)
-        db.session.execute(stmt)
+        for jobpost in jobposts:
+            # Delete job requests where completed is False
+            stmt = db.delete(Jobrequest).where(Jobrequest.job_id == jobpost.job_id, Jobrequest.completed == False)
+            db.session.execute(stmt)
 
-        # Delete the user
+            # Update job requests where completed is True to link them to a placeholder job post
+            placeholder_jobpost_id = None
+            if jobpost.jobrequests:
+                placeholder_jobpost = Jobpost(
+                    job_type=jobpost.job_type,  # Keep the same job_type
+                    job_location=jobpost.job_location,  # Keep the same job_location
+                    user_name=new_deleted_user_name,
+                    availability=jobpost.availability,  # Keep the same availability
+                    date=jobpost.date,  # Keep the same date
+                    description=jobpost.description  # Keep the same description
+                )
+                db.session.add(placeholder_jobpost)
+                db.session.commit()
+                placeholder_jobpost_id = placeholder_jobpost.job_id
+
+            stmt = db.update(Jobrequest).where(Jobrequest.job_id == jobpost.job_id, Jobrequest.completed == True).values(job_id=placeholder_jobpost_id)
+            db.session.execute(stmt)
+
+        # Commit the changes to ensure the updates are applied
+        db.session.commit()
+
+        for jobpost in jobposts:
+            # Delete the job post
+            db.session.delete(jobpost)
+
+        # Commit the changes to ensure the updates are applied
+        db.session.commit()
+
+        # Finally, delete the user
         db.session.delete(user)
         db.session.commit()
-        
+
         # Return success message
         return {"message": f"User Name: {user_name} deleted successfully!"}
     else:

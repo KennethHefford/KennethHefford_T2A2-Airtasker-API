@@ -7,6 +7,7 @@ from controllers.cli_controllers import db_commands
 from controllers.auth_controllers import auth_bp
 from controllers.jobpost_controllers import jobposts_bp
 from controllers.review_controllers import review_bp
+from controllers.jobrequest_controllers import jobrequests_bp
 
 def create_app():
     app = Flask(__name__)
@@ -27,6 +28,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(jobposts_bp)
     app.register_blueprint(review_bp)
+    app.register_blueprint(jobrequests_bp)
 
     return app
 

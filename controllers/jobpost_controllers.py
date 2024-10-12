@@ -5,10 +5,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from init import db
 from models.jobpost import Jobpost, jobpost_schema, jobposts_schema
 from models.jobrequest import Jobrequest
-from models.review import Review
 from controllers.jobrequest_controllers import jobrequests_bp
 
-from utils import authorise_as_admin
+from utils import authorise_as_admin_or_user
 
 jobposts_bp = Blueprint("jobposts", __name__, url_prefix="/jobposts")
 # Register the jobrequests_bp blueprint - make all routes in jobrequest_controllers.py have the prefix /jobposts
@@ -55,27 +54,19 @@ def create_jobpost():
     
     return jobpost_schema.dump(jobpost), 201
 
-#/jobposts/<id> - DELETE - delete a jobpost
+
+
+# /jobposts/<id> - DELETE - delete a jobpost
 @jobposts_bp.route("/<int:job_id>", methods=["DELETE"])
 @jwt_required()
+@authorise_as_admin_or_user
 def delete_jobpost(job_id):
-    # Get the current user's user_name from the JWT
-    current_user_name = get_jwt_identity()
-    
-    # Check if user is admin
-    is_admin = authorise_as_admin()
-    
     # Fetch the job post from the database
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
     
     # If job post exists
     if jobpost:
-        # If not admin or job post owner
-        if not (is_admin or jobpost.user_name == current_user_name):
-        # Return error message
-            return {"error": "You are not authorised to delete job posts."}, 403
-        
         # Set job_id to NULL for all completed job requests
         stmt = db.update(Jobrequest).where(Jobrequest.job_id == job_id, Jobrequest.completed == True).values(job_id=None)
         db.session.execute(stmt)
@@ -87,12 +78,12 @@ def delete_jobpost(job_id):
         # Delete the job post
         db.session.delete(jobpost)
         db.session.commit()
+        
         # Return success message
         return {"message": f"Job {jobpost.job_type} deleted successfully!"}, 200
     else:
         # Return error message if job post not found
         return {"error": f"Job Post with job ID:{job_id} not found"}, 404
-    
 
 
 #/jobposts/<id> -PUT,PATCH -edit a jobpost
