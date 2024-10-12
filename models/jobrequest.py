@@ -16,7 +16,7 @@ class Jobrequest(db.Model):
     job_id = db.Column(db.Integer, db.ForeignKey("jobposts.job_id"), nullable=False)
 
     user = db.relationship("User", back_populates="jobrequests")
-    jobpost = db.relationship("Jobpost", back_populates="jobrequests", foreign_keys=[job_id])
+    jobpost = db.relationship("Jobpost", back_populates="jobrequests" )  #removed ,foreign_keys=[job_id]
     reviews = db.relationship('Review', back_populates='jobrequest')
 
 class JobrequestSchema(ma.Schema):

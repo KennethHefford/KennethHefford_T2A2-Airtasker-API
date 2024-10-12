@@ -36,14 +36,14 @@ def create_jobrequest(job_id):
         #return acknowledgement
         return jobrequest_schema.dump(jobrequest), 201
     else:
-        return {"error": f"Job request with ID {job_id} not found"}, 404
+        return {"error": f"Job Post with ID {job_id} not found"}, 404
     
 
 
 # Delete jobrequest only available if completed is == false
 @jobrequests_bp.route("/<int:request_id>", methods=["DELETE"])
 @jwt_required()
-def delete_jobrequest(request_id):
+def delete_jobrequest(job_id, request_id):
     # Get the current user's user_name from the JWT
     current_user_name = get_jwt_identity()
     
@@ -73,10 +73,11 @@ def delete_jobrequest(request_id):
     else:
         # Return error message if job request not found
         return {"error": f"Job Request with ID {request_id} does not exist"}, 404
+    
 #edit job request
 @jobrequests_bp.route("/<int:request_id>", methods=["PUT", "PATCH"])
 @jwt_required()
-def edit_jobrequest(request_id):
+def edit_jobrequest(job_id, request_id):
     # Load the data from the request body
     body_data = jobrequest_schema.load(request.get_json(), partial=True)
     

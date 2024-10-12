@@ -2,14 +2,16 @@ from datetime import date
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
 from init import db
 from models.jobpost import Jobpost, jobpost_schema, jobposts_schema
+from models.jobrequest import Jobrequest
+from models.review import Review
 from controllers.jobrequest_controllers import jobrequests_bp
 
 from utils import authorise_as_admin
 
 jobposts_bp = Blueprint("jobposts", __name__, url_prefix="/jobposts")
+# Register the jobrequests_bp blueprint - make all routes in jobrequest_controllers.py have the prefix /jobposts
 jobposts_bp.register_blueprint(jobrequests_bp)
 
 
@@ -51,7 +53,7 @@ def create_jobpost():
     db.session.add(jobpost)
     db.session.commit()
     
-    return jobpost_schema.dump(jobpost)
+    return jobpost_schema.dump(jobpost), 201
 
 #/jobposts/<id> - DELETE - delete a jobpost
 @jobposts_bp.route("/<int:job_id>", methods=["DELETE"])
@@ -71,9 +73,17 @@ def delete_jobpost(job_id):
     if jobpost:
         # If not admin or job post owner
         if not (is_admin or jobpost.user_name == current_user_name):
-            # Return error message
+        # Return error message
             return {"error": "You are not authorised to delete job posts."}, 403
         
+        # Set job_id to NULL for all completed job requests
+        stmt = db.update(Jobrequest).where(Jobrequest.job_id == job_id, Jobrequest.completed == True).values(job_id=None)
+        db.session.execute(stmt)
+
+        # Delete job requests where completed is False
+        stmt = db.delete(Jobrequest).where(Jobrequest.job_id == job_id, Jobrequest.completed == False)
+        db.session.execute(stmt)
+
         # Delete the job post
         db.session.delete(jobpost)
         db.session.commit()

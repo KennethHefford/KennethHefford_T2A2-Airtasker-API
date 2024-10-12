@@ -36,7 +36,7 @@ def seed_tables():
     
     jobposts = [
         Jobpost(
-        job_type = "sample_plumming",
+        job_type = "sample_plumbing",
         availability = "Monday-Friday 8am-5pm",
         description = "I am available to do all jobs relating to plumming",
         date = date.today(),
