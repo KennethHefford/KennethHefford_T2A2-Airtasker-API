@@ -80,7 +80,7 @@ def delete_user(user_name):
         else:
             new_deleted_user_name = "[deleted user 1]"
 
-        new_deleted_user_email = f"deleted{last_number + 1}@example.com" if last_deleted_user else "deleted1@example.com"
+        new_deleted_user_email = f"deleted{last_number + 1}@deleted.com" if last_deleted_user else "deleted1@deleted.com"
 
         # Check if the placeholder user exists, if not, create it
         stmt = db.select(User).filter_by(user_name=new_deleted_user_name)

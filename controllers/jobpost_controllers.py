@@ -55,36 +55,37 @@ def create_jobpost():
     return jobpost_schema.dump(jobpost), 201
 
 
-
-# /jobposts/<id> - DELETE - delete a jobpost
-@jobposts_bp.route("/<int:job_id>", methods=["DELETE"])
+#/jobposts/<id> - DELETE - delete a jobpost if the user is the owner or an admin
+@jobposts_bp.route('/<int:job_id>', methods=['DELETE'])
 @jwt_required()
 @authorise_as_admin_or_user
 def delete_jobpost(job_id):
-    # Fetch the job post from the database
     stmt = db.select(Jobpost).filter_by(job_id=job_id)
     jobpost = db.session.scalar(stmt)
-    
-    # If job post exists
     if jobpost:
-        # Set job_id to NULL for all completed job requests
-        stmt = db.update(Jobrequest).where(Jobrequest.job_id == job_id, Jobrequest.completed == True).values(job_id=None)
-        db.session.execute(stmt)
+        # Check if there are any completed job requests for this job post
+        stmt = db.select(Jobrequest).filter_by(job_id=job_id, completed=True)
+        completed_requests = db.session.scalars(stmt).all()
 
-        # Delete job requests where completed is False
-        stmt = db.delete(Jobrequest).where(Jobrequest.job_id == job_id, Jobrequest.completed == False)
-        db.session.execute(stmt)
+        if not completed_requests:
+            # No completed job requests, delete the job post completely
+            db.session.delete(jobpost)
+        else:
+            # There are completed job requests, update the job post to mark it as deleted
+            jobpost.job_location = "Unknown"
+            jobpost.availability = "Not Available"
+            jobpost.description = "This job post has been deleted"
 
-        # Delete the job post
-        db.session.delete(jobpost)
+            # Update foreign keys in Jobrequest to point to the same job post
+            stmt = db.update(Jobrequest).where(Jobrequest.job_id == job_id).values(job_id=job_id)
+            db.session.execute(stmt)
+
+        # Commit the changes
         db.session.commit()
-        
-        # Return success message
-        return {"message": f"Job {jobpost.job_type} deleted successfully!"}, 200
-    else:
-        # Return error message if job post not found
-        return {"error": f"Job Post with job ID:{job_id} not found"}, 404
 
+        return jobpost_schema.dump(jobpost)
+    else:
+        return {"error": f"Job Post with ID {job_id} not found."}, 404
 
 #/jobposts/<id> -PUT,PATCH -edit a jobpost
 @jobposts_bp.route("/<int:job_id>", methods=["PUT", "PATCH"])
