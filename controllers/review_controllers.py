@@ -82,7 +82,7 @@ def delete_review(request_id, review_id):
     # Fetch the review by its ID and request_id
     stmt = db.select(Review).filter_by(review_id=review_id, request_id=request_id)
     review = db.session.scalar(stmt)
-    
+
     # If review exists
     if review:
         # Delete the review
@@ -91,4 +91,4 @@ def delete_review(request_id, review_id):
         return {"message": f"Review with ID {review_id} has been deleted successfully."}, 200
     else:
         # Return error message if review not found
-        return {"error": f"Review with ID {review_id} does not exist."}, 404
+        return {"error": f"Review with ID {review_id} does not exist or you are not authorized to delete it. Only admins can delete reviews."}, 403

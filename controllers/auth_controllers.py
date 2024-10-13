@@ -61,7 +61,7 @@ def login_user():
         
         # Return user info and token
         return {"email": user.email, "is_admin": user.is_admin, "token": token}
-
+    # Return error message if credentials are invalid
     return {"error": "Invalid email or password"}, 400
 
 # Delete a user account
@@ -78,7 +78,7 @@ def delete_user(user_name):
         db.session.delete(user)
         db.session.commit()
         return {"message": f"User '{user_name}' deleted successfully"}, 200
-
+    # Return error message if user not found
     return {"message": f"User '{user_name}' not found"}, 404
 
 # Update user information
@@ -110,5 +110,5 @@ def update_user(user_name):
 
         # Return the updated user data
         return user_schema.dump(user), 200
-
+# Return error message if user not found
     return {"error": "User not found"}, 404
