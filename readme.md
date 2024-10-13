@@ -113,13 +113,13 @@ Trello was used as a program management team. I utilised Trello to ensure that a
 #### Usage:
 Throughout the project, Trello was used to manage and track tasks. Below are some screenshots of some Trello Trello Cards at different stages of the project:
 
-![Trello Board - Initial Setup](path/to/initial_setup_screenshot.png)
+![Trello Board - Initial Setup](../docs/early%20trello.png)
 *Initial setup of the Trello board with tasks categorised into To Do, Doing, and Done lists.*
 
-![Trello Board - Mid Project](path/to/mid_project_screenshot.png)
+![Trello Board - Mid Project](../docs/mid%20trello.png)
 *Mid-project progress showing tasks being moved from To Do to Doing and Done lists.*
 
-![Trello Board - Project Completion](path/to/project_completion_screenshot.png)
+![Trello Board - Project Completion](../docs/late%20trello.png)
 *Final state of the Trello board tasks in the Done list, indicating project completion.*
 
 Regular reviews of the Trello board were conducted to ensure that tasks were on track and to address any blockers promptly. This systematic approach to task management ensured that the project stayed organised and on schedule, ultimately contributing to its successful completion.
@@ -301,6 +301,8 @@ def update_user(user_name):
 
 
 ### R6: Entity Relationship Diagram (ERD)
+
+![Airtasker Entity Relationship Diagram](../docs/Airtasker%20ERD.png)
 
 **Overview**:
 1. **User**: Represents users of the application.
